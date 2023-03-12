@@ -2,6 +2,8 @@ package framework
 
 import (
 	"context"
+	"math/rand"
+	"strconv"
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -35,7 +37,7 @@ func NewDefaultFramework(baseName string) *Framework {
 
 		ns, err := clientSet.CoreV1().Namespaces().Create(context.TODO(), &v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: f.BaseName,
+				Name: f.BaseName + strconv.Itoa(rand.Intn(10000)),
 			},
 		}, metav1.CreateOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -44,7 +46,7 @@ func NewDefaultFramework(baseName string) *Framework {
 	})
 
 	ginkgo.AfterEach(func() {
-		err := f.ClientSet.CoreV1().Namespaces().Delete(context.TODO(), f.BaseName, metav1.DeleteOptions{})
+		err := f.ClientSet.CoreV1().Namespaces().Delete(context.TODO(), f.Namespace.Name, metav1.DeleteOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		f.Namespace = nil
