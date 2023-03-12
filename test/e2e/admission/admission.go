@@ -158,6 +158,58 @@ var _ = ginkgo.Describe("Admission controller", func() {
 		_, err := client.CoreV1().Pods(ns).Create(context.TODO(), pod, metav1.CreateOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
+
+	ginkgo.It("should allow pod that does not need any patch", func() {
+		ginkgo.By("creating a pod successfully")
+		pod := &v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-pod",
+			},
+			Spec: v1.PodSpec{
+				InitContainers: []v1.Container{
+					{
+						Name:  "init-0",
+						Image: "busybox",
+						Command: []string{
+							"sh",
+							"-c",
+							"exit 0",
+						},
+						Resources: v1.ResourceRequirements{
+							Limits: v1.ResourceList{
+								v1.ResourceCPU: resource.MustParse("100m"),
+							},
+						},
+					},
+				},
+				Containers: []v1.Container{
+					{
+						Name:  "container-0",
+						Image: "nginx",
+						Resources: v1.ResourceRequirements{
+							Limits: v1.ResourceList{
+								v1.ResourceCPU: resource.MustParse("2"),
+							},
+						},
+					},
+				},
+			},
+		}
+		_, err := client.CoreV1().Pods(ns).Create(context.TODO(), pod, metav1.CreateOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("getting the pod")
+		pod, err = client.CoreV1().Pods(ns).Get(context.TODO(), pod.Name, metav1.GetOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("ensuring that the pod has not been modified")
+		for _, container := range pod.Spec.InitContainers {
+			err = checkGOMAXPROCSEnvNotSetForContainer(&container)
+		}
+		for _, container := range pod.Spec.Containers {
+			err = checkGOMAXPROCSEnvNotSetForContainer(&container)
+		}
+	})
 })
 
 func checkGOMAXPROCSEnvNotSetForContainer(container *v1.Container) error {

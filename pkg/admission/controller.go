@@ -16,7 +16,11 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var patchTypeJSONPatch = v1.PatchTypeJSONPatch
+var (
+	patchTypeJSONPatch  = v1.PatchTypeJSONPatch
+	injectAnnotationKey = "gomaxprocs-injector/inject"
+	injectDisabledValue = "disabled"
+)
 
 type Controller struct {
 }
@@ -112,6 +116,13 @@ func (c *Controller) admit(review v1.AdmissionReview) *v1.AdmissionResponse {
 
 	klog.InfoS("Admitting a pod", "pod", klog.KObj(&pod))
 
+	if !isInjectionEnabled(&pod) {
+		klog.InfoS("Skipping pod as injection is disabled", "pod", klog.KObj(&pod))
+		return &v1.AdmissionResponse{
+			Allowed: true,
+		}
+	}
+
 	newPod := pod.DeepCopy()
 	for i := range newPod.Spec.InitContainers {
 		if err := mutateContainer(&newPod.Spec.InitContainers[i]); err != nil {
@@ -186,4 +197,17 @@ func (c *Controller) admitV1beta1(review v1beta1.AdmissionReview) *v1beta1.Admis
 	in := v1.AdmissionReview{Request: convertAdmissionRequestToV1(review.Request)}
 	out := c.admit(in)
 	return convertAdmissionResponseToV1beta1(out)
+}
+
+func isInjectionEnabled(pod *corev1.Pod) bool {
+	if pod.Annotations == nil {
+		return true
+	}
+
+	enabled, ok := pod.Annotations[injectAnnotationKey]
+	if !ok {
+		return true
+	}
+
+	return enabled != injectDisabledValue
 }
