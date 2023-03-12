@@ -68,7 +68,7 @@ jobs:
 
     - name: Deploy gomaxprocs-injector
       run: |
-        make image VERSION=${VERSION}
+        make image VERSION="${VERSION}"
         kind load docker-image "gjkim42/gomaxprocs-injector:${VERSION}"
         envsubst < gomaxprocs-injector.yaml | kubectl apply -f -
         kubectl rollout status -n gomaxprocs-injector deployment gomaxprocs-injector
