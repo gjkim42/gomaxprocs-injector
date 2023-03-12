@@ -1,0 +1,86 @@
+name: Continuous integration
+on:
+  push:
+    tags:
+    - v*
+    branches:
+    - main
+    - release-*
+  pull_request:
+
+env:
+  GO_VERSION: '1.20.2'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - uses: gjkim42/go-verify@v1
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - run: make build
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - run: make test
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - run: make image
+
+  test-e2e:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: helm/kind-action@v1.5.0
+      with:
+        cluster_name: kind
+
+    - name: Install cert-manager
+      run: |
+        kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERTMANAGER_VERSION}/cert-manager.yaml
+        kubectl rollout status -n cert-manager deployment cert-manager-webhook
+      env:
+        CERTMANAGER_VERSION: "v1.7.2"
+
+    - name: Deploy gomaxprocs-injector
+      run: |
+        make image VERSION=${VERSION}
+        kind load docker-image "gjkim42/gomaxprocs-injector:${VERSION}"
+        envsubst < gomaxprocs-injector.yaml | kubectl apply -f -
+        kubectl rollout status -n gomaxprocs-injector deployment gomaxprocs-injector
+      env:
+        VERSION: test-e2e
+
+    - uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: e2e test
+      run: |
+        go install -mod=mod github.com/onsi/ginkgo/v2/ginkgo
+        ginkgo ./test/e2e -- \
+          --kubeconfig=${HOME}/.kube/config \
