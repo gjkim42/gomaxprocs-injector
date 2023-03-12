@@ -2,6 +2,10 @@
 
 Inject optimized `GOMAXPROCS` environment variable into every pod.
 
+```
+GOMAXPROCS=max(1, ceil(CPU limit of the container))
+```
+
 Note that, this project is a workaround for
 https://github.com/golang/go/issues/33803. If golang addresses the issue
 internally, this project would be no longer needed.
