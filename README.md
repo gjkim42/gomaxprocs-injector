@@ -37,3 +37,8 @@ kubectl rollout status -n gomaxprocs-injector deployment gomaxprocs-injector
 ```sh
 VERSION=latest envsubst < gomaxprocs-injector.yaml | kubectl delete -f -
 ```
+
+## Disabling injection
+
+Injection can be disabled for a pod by adding `gomaxprocs-injector/inject:
+disabled` annotation.

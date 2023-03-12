@@ -147,6 +147,37 @@ func TestAdmit(t *testing.T) {
 				0,
 			},
 		},
+		{
+			desc: "injection disabled pod",
+			review: v1.AdmissionReview{
+				Request: &v1.AdmissionRequest{
+					Resource: metav1.GroupVersionResource{
+						Group:    "",
+						Version:  "v1",
+						Resource: "pods",
+					},
+					Object: newPodObjectFromPod(t, &corev1.Pod{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "injection-disabled-pod",
+							Annotations: map[string]string{
+								"gomaxprocs-injector/inject": "disabled",
+							},
+						},
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								containerWithCPULimit("100m"),
+								containerWithCPULimit("1"),
+							},
+						},
+					}),
+				},
+			},
+			allowed: true,
+			expectedContainersGOMAXPROCS: []int{
+				0,
+				0,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
