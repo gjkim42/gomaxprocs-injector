@@ -119,6 +119,34 @@ func TestAdmit(t *testing.T) {
 				3,
 			},
 		},
+		{
+			desc: "if pod does not need patch",
+			review: v1.AdmissionReview{
+				Request: &v1.AdmissionRequest{
+					Resource: metav1.GroupVersionResource{
+						Group:    "",
+						Version:  "v1",
+						Resource: "pods",
+					},
+					Object: newPodObjectFromPod(t, &corev1.Pod{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "test-pod",
+						},
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{},
+								{},
+							},
+						},
+					}),
+				},
+			},
+			allowed: true,
+			expectedContainersGOMAXPROCS: []int{
+				0,
+				0,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -204,6 +232,13 @@ func checkGOMAXPROCS(t *testing.T, rawObject, patch []byte, expectedInitContaine
 		t.Fatal(err)
 	}
 
+	if expectedPatch == nil || len(expectedPatch) == 0 {
+		if patch != nil {
+			t.Errorf("expected no patch, got %s", string(patch))
+		}
+		return
+	}
+
 	expectedPatchBytes, err := json.Marshal(expectedPatch)
 	if err != nil {
 		t.Fatal(err)
@@ -215,8 +250,6 @@ func checkGOMAXPROCS(t *testing.T, rawObject, patch []byte, expectedInitContaine
 	if diff := cmp.Diff(expectedPatchBytes, patch); diff != "" {
 		t.Errorf("unexpected patch (-want +got):\n%s", diff)
 	}
-
-	return
 }
 
 func applyGOMAXPROCSToEnv(env []corev1.EnvVar, gomaxprocs int) []corev1.EnvVar {

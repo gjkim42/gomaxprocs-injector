@@ -1,4 +1,5 @@
 VERSION?=$(shell if [ -d .git ]; then git describe --tags --dirty --always; else echo "unknown"; fi)
+OUTPUT_DIR?=_output
 
 .PHONY: build
 build:

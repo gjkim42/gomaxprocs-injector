@@ -132,6 +132,15 @@ func (c *Controller) admit(review v1.AdmissionReview) *v1.AdmissionResponse {
 		return toV1AdmissionResponse(err)
 	}
 
+	if len(patch) == 0 {
+		klog.InfoS("No changes to pod", "pod", klog.KObj(&pod))
+		return &v1.AdmissionResponse{
+			Allowed: true,
+		}
+	}
+
+	klog.InfoS("Patching pod", "pod", klog.KObj(&pod), "patch", patch)
+
 	patchBytes, err := json.Marshal(patch)
 	if err != nil {
 		klog.ErrorS(err, "Failed to marshal JSONPatch")
