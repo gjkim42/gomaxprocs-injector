@@ -80,13 +80,22 @@ var _ = ginkgo.Describe("Admission controller", func() {
 						Image: "nginx",
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
-								v1.ResourceCPU: resource.MustParse("100m"),
+								v1.ResourceCPU: resource.MustParse("2100m"),
 							},
 						},
 					},
 					{
 						Name:  "container-3",
 						Image: "nginx",
+					},
+					{
+						Name:  "container-4",
+						Image: "nginx",
+						Resources: v1.ResourceRequirements{
+							Limits: v1.ResourceList{
+								v1.ResourceCPU: resource.MustParse("2100m"),
+							},
+						},
 					},
 				},
 			},
@@ -108,7 +117,7 @@ var _ = ginkgo.Describe("Admission controller", func() {
 		err = checkGOMAXPROCSEnvSetForContainer(&pod.Spec.Containers[1], "1")
 
 		ginkgo.By("checking if the container with fractional cpu limit has appropriate GOMAXPROCS env")
-		err = checkGOMAXPROCSEnvSetForContainer(&pod.Spec.Containers[2], "1")
+		err = checkGOMAXPROCSEnvSetForContainer(&pod.Spec.Containers[2], "2")
 
 		ginkgo.By("checking if a container without cpu limit does not have the GOMAXPROCS env")
 		err = checkGOMAXPROCSEnvNotSetForContainer(&pod.Spec.Containers[3])

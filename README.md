@@ -3,7 +3,7 @@
 Inject optimized `GOMAXPROCS` environment variable into every pod.
 
 ```
-GOMAXPROCS=max(1, ceil(CPU limit of the container))
+GOMAXPROCS=max(1, floor(CPU limit of the container))
 ```
 
 Note that, this project is a workaround for
