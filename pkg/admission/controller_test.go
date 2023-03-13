@@ -79,10 +79,10 @@ func TestAdmit(t *testing.T) {
 				0, // container-without-cpu-limit
 				1,
 				1,
+				1,
+				1,
 				2,
 				2,
-				2,
-				3,
 				3, // container-with-GOMAXPROCS
 			},
 		},

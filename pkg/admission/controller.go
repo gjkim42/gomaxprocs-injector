@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -178,16 +179,17 @@ func mutateContainer(container *corev1.Container) error {
 		return nil
 	}
 
-	roundedCPULimit := container.Resources.Limits.Cpu().Value()
-	if roundedCPULimit < 1 {
-		roundedCPULimit = 1
+	quota := float64(container.Resources.Limits.Cpu().MilliValue()) / 1000.0
+	gomaxProcs := int64(math.Floor(quota))
+	if gomaxProcs < 1 {
+		gomaxProcs = 1
 	}
 
-	klog.InfoS("Setting GOMAXPROCS", "container", container.Name, "value", roundedCPULimit)
+	klog.InfoS("Setting GOMAXPROCS", "container", container.Name, "value", gomaxProcs)
 
 	container.Env = append(container.Env, corev1.EnvVar{
 		Name:  "GOMAXPROCS",
-		Value: strconv.FormatInt(roundedCPULimit, 10),
+		Value: strconv.FormatInt(gomaxProcs, 10),
 	})
 
 	return nil
