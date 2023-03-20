@@ -8,8 +8,8 @@ require (
 	github.com/onsi/gomega v1.27.4
 	github.com/spf13/cobra v1.6.1
 	github.com/wI2L/jsondiff v0.3.0
-	k8s.io/api v0.26.2
-	k8s.io/apimachinery v0.26.2
+	k8s.io/api v0.26.3
+	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.2
 	k8s.io/klog/v2 v2.90.1
 )
