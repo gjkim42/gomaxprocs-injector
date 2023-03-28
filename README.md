@@ -10,11 +10,12 @@ Note that, this project is a workaround for
 https://github.com/golang/go/issues/33803. If golang addresses the issue
 internally, this project would be no longer needed.
 
-There is already [automaxprocs](https://github.com/uber-go/automaxprocs) package
-that automatically sets `GOMAXPROCS`, however there are still many applications
-not using `automaxprocs` for various reasons. `gomaxprocs-injector` can
-complement them by injecting optimized `GOMAXPROCS` environment variable into
-their pods.
+Although there is already an
+[automaxprocs](https://github.com/uber-go/automaxprocs) package that
+automatically sets `GOMAXPROCS`, many applications still dont use it for various
+reasons. `gomaxprocs-injector` can complement these applications by injecting
+optimized `GOMAXPROCS` environment variable into their pods, improving their
+performance.
 
 ## Getting Started
 
