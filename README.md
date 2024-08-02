@@ -1,6 +1,6 @@
 # gomaxprocs-injector
 
-Inject optimized `GOMAXPROCS` environment variable into every pod.
+Inject CFS-aware `GOMAXPROCS` environment variable into every pod.
 
 ```
 GOMAXPROCS=max(1, floor(CPU limit of the container))
