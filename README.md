@@ -12,7 +12,7 @@ internally, this project would be no longer needed.
 
 Although there is already an
 [automaxprocs](https://github.com/uber-go/automaxprocs) package that
-automatically sets `GOMAXPROCS`, many applications still dont use it for various
+automatically sets `GOMAXPROCS`, many applications still cannot use it for various
 reasons. `gomaxprocs-injector` can complement these applications by injecting
 optimized `GOMAXPROCS` environment variable into their pods, improving their
 performance.
