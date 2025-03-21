@@ -27,7 +27,7 @@ var _ = ginkgo.Describe("Admission controller", func() {
 	ginkgo.AfterEach(func() {
 	})
 
-	ginkgo.It("should applies appropriate GOMAXPROCS env to pods", func() {
+	ginkgo.It("should apply appropriate GOMAXPROCS env to pods", func() {
 		ginkgo.By("creating a pod")
 		pod := &v1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
